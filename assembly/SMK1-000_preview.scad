@@ -23,6 +23,7 @@
 // PREVIEW CONTROL
 //-----------------------------------------------------------------------------
 PREVIEW_ASSEMBLY = true;
+PREVIEW_EXPLODED = false;
 
 //-----------------------------------------------------------------------------
 // LIBRARY IMPORTS
@@ -33,6 +34,10 @@ include <../hardware/fasteners.scad>;
 include <../hardware/bearings.scad>;
 include <../hardware/motors.scad>;
 include <../parts/pan/SMK1-001_pan_base.scad>;
+include <../parts/pan/SMK1-002_pan_ring.scad>;
+include <../parts/pan/SMK1-003_slip_ring_holder.scad>;
+include <../parts/pan/SMK1-004_stepper_mount.scad>;
+include <../parts/pan/SMK1-005_pan_bearing_retainer.scad>;
 
 //-----------------------------------------------------------------------------
 // AXES & HELPERS
@@ -77,26 +82,47 @@ module ghosted_motor(color_value = [0.2,0.5,0.8,0.3]) {
 //-----------------------------------------------------------------------------
 // ASSEMBLY PREVIEW
 //----------------------------------------------------------------------------- 
+module _exploded_offset(exploded, vector) {
+    if (exploded)
+        translate(vector)
+            children();
+    else
+        children();
+}
+
 if (PREVIEW_ASSEMBLY) {
+    exploded = PREVIEW_EXPLODED;
+
     // Base part.
-    SMK1_001_pan_base();
+    _exploded_offset(exploded, [0,0,0]) {
+        SMK1_001_pan_base();
+    }
 
-    // Reference standard parts.
-    translate([0, 0, 10])
-        bearing_608zz(show_keepout = false, show_press_fit = false, show_center_bore = true);
+    // Pan ring assembly.
+    _exploded_offset(exploded, [0, 0, 20]) {
+        SMK1_002_pan_ring();
+    }
 
-    translate([80, 0, 32])
-        nema17(show_mount = false, show_keepout = false);
+    // Bearing retainer and bearing.
+    _exploded_offset(exploded, [0, 0, 10]) {
+        SMK1_005_pan_bearing_retainer();
+        translate([0, 0, 10])
+            bearing_608zz(show_keepout = false, show_press_fit = false, show_center_bore = true);
+    }
 
-    translate([-80, 0, 20])
-        color([0.2,0.5,0.8,0.3])
-            mg996r(show_mount = false, show_keepout = false);
+    // Stepper mount and motor placeholder.
+    _exploded_offset(exploded, [80, 0, 20]) {
+        SMK1_004_stepper_mount();
+        translate([0, 0, 32])
+            nema17(show_mount = false, show_keepout = false);
+    }
 
-    translate([0, 0, 8])
-        slip_ring_placeholder();
-
-    translate([0, -90, 22])
-        electronics_enclosure_placeholder();
+    // Slip ring holder and placeholder.
+    _exploded_offset(exploded, [-80, 0, 20]) {
+        SMK1_003_slip_ring_holder();
+        translate([0, 0, 8])
+            slip_ring_placeholder();
+    }
 
     // Reference axes and labels.
     axes(120, 2);

@@ -55,11 +55,9 @@ module m3_counterbore(outer_d = 6.0, inner_d = 3.2, depth = 3.0, through = false
     inner_d = _clamp(inner_d, 0.1, outer_d - 0.1);
     depth = _safe_dimension(depth, 0.1);
 
-    union() {
+    difference() {
         cylinder(d = outer_d, h = depth, center = center, $fn = PREVIEW_FN);
-        if (!through)
-            translate([0, 0, center ? depth/2 : 0])
-                cylinder(d = inner_d, h = depth, center = center, $fn = PREVIEW_FN);
+        cylinder(d = inner_d, h = through ? depth + 2 : depth - 0.1, center = center, $fn = PREVIEW_FN);
     }
 }
 
